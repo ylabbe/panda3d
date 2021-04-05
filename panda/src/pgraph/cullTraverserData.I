@@ -26,7 +26,6 @@ CullTraverserData(const NodePath &start,
   _net_transform(net_transform),
   _state(state),
   _view_frustum(view_frustum),
-  _cull_planes(nullptr),
   _draw_mask(DrawMask::all_on()),
   _portal_depth(0)
 {
@@ -149,7 +148,7 @@ get_net_transform(const CullTraverser *) const {
  */
 INLINE int CullTraverserData::
 is_in_view(const DrawMask &camera_mask) const {
-  bool check_bounds = (_view_frustum != nullptr);
+  bool check_bounds = (_view_frustum != nullptr || _cull_planes != nullptr);
   _node_reader.check_cached(check_bounds);
 
   if (!_node_reader.compare_draw_mask(_draw_mask, camera_mask)) {
@@ -162,7 +161,7 @@ is_in_view(const DrawMask &camera_mask) const {
     return BoundingVolume::IF_no_intersection;
   }
 
-  if (_view_frustum != nullptr && !fake_view_frustum_cull) {
+  if (_view_frustum != nullptr) {
     const GeometricBoundingVolume *node_gbv = _node_reader.get_bounds()->as_geometric_bounding_volume();
     nassertr(node_gbv != nullptr, BoundingVolume::IF_no_intersection);
 
@@ -178,7 +177,7 @@ is_in_view(const DrawMask &camera_mask) const {
  */
 INLINE int CullTraverserData::
 is_child_in_view(const PandaNodePipelineReader &node_reader, const DrawMask &camera_mask) const {
-  bool check_bounds = (_view_frustum != nullptr);
+  bool check_bounds = (_view_frustum != nullptr || _cull_planes != nullptr);
   node_reader.check_cached(check_bounds);
 
   if (!node_reader.compare_draw_mask(_draw_mask, camera_mask)) {
@@ -191,7 +190,7 @@ is_child_in_view(const PandaNodePipelineReader &node_reader, const DrawMask &cam
     return BoundingVolume::IF_no_intersection;
   }
 
-  if (_view_frustum != nullptr && !fake_view_frustum_cull) {
+  if (_view_frustum != nullptr) {
     const GeometricBoundingVolume *node_gbv = node_reader.get_bounds()->as_geometric_bounding_volume();
     nassertr(node_gbv != nullptr, BoundingVolume::IF_no_intersection);
 
@@ -206,12 +205,14 @@ is_child_in_view(const PandaNodePipelineReader &node_reader, const DrawMask &cam
  */
 INLINE int CullTraverserData::
 is_child_in_view(const PandaNode::DownConnection &child, const DrawMask &camera_mask) const {
+  // No need to call check_cached here, since we presumably already called it
+  // on the parent.
   if (!child.compare_draw_mask(_draw_mask, camera_mask)) {
     // If there are no draw bits in common with the camera, the node is out.
     return BoundingVolume::IF_no_intersection;
   }
 
-  if (_view_frustum != nullptr && !fake_view_frustum_cull) {
+  if (_view_frustum != nullptr) {
     const GeometricBoundingVolume *node_gbv = child.get_bounds();
     nassertr(node_gbv != nullptr, BoundingVolume::IF_no_intersection);
 

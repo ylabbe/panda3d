@@ -63,11 +63,17 @@ apply_transform_and_state(CullTraverser *trav) {
     _state = _state->compose(node_state);
   }
 
-  if (clip_plane_cull && _cull_planes != nullptr) {
-    _cull_planes = _cull_planes->apply_state(trav, this,
-      (const ClipPlaneAttrib *)node_state->get_attrib(ClipPlaneAttrib::get_class_slot()),
-      (const ClipPlaneAttrib *)_node_reader.get_off_clip_planes(),
-      (const OccluderEffect *)node_effects->get_effect(OccluderEffect::get_class_type()));
+  if (clip_plane_cull) {
+    const ClipPlaneAttrib *cpa = (const ClipPlaneAttrib *)
+      node_state->get_attrib(ClipPlaneAttrib::get_class_slot());
+    const OccluderEffect *occluders = (const OccluderEffect *)
+      node_effects->get_effect(OccluderEffect::get_class_type());
+
+    if (cpa != nullptr || occluders != nullptr) {
+      CullPlanes::apply_state(_cull_planes, trav, this, cpa,
+        (const ClipPlaneAttrib *)_node_reader.get_off_clip_planes(),
+        occluders);
+    }
   }
 }
 
@@ -91,28 +97,28 @@ apply_transform(const TransformState *node_transform) {
     if (_view_frustum != nullptr || _cull_planes != nullptr) {
       // We need to move the viewing frustums into the node's coordinate space
       // by applying the node's inverse transform.
-      if (node_transform->is_singular()) {
-        // But we can't invert a singular transform!  Instead of trying, we'll
-        // just give up on frustum culling from this point down.
-        _view_frustum = nullptr;
-        _cull_planes = nullptr;
-
-      } else {
-        CPT(TransformState) inv_transform =
-          node_transform->invert_compose(TransformState::make_identity());
-
+      const LMatrix4 *inverse_mat = node_transform->get_inverse_mat();
+      if (inverse_mat != nullptr) {
         // Copy the bounding volumes for the frustums so we can transform
         // them.
         if (_view_frustum != nullptr) {
           _view_frustum = _view_frustum->make_copy()->as_geometric_bounding_volume();
           nassertv(_view_frustum != nullptr);
 
-          _view_frustum->xform(inv_transform->get_mat());
+          _view_frustum->xform(*inverse_mat);
         }
 
         if (_cull_planes != nullptr) {
-          _cull_planes = _cull_planes->xform(inv_transform->get_mat());
+          _cull_planes = _cull_planes->xform(*inverse_mat);
         }
+      }
+      else {
+        // But we can't invert a singular transform!  Instead of trying, we'll
+        // just give up on frustum culling from this point down.
+        pgraph_cat.warning()
+          << "Singular transformation detected on node: " << get_node_path() << "\n";
+        _view_frustum = nullptr;
+        _cull_planes = nullptr;
       }
     }
   }
@@ -158,11 +164,6 @@ r_get_node_path() const {
  */
 bool CullTraverserData::
 apply_cull_planes(const CullPlanes *planes, const GeometricBoundingVolume *node_gbv) {
-  if (_node_reader.get_transform()->is_invalid()) {
-    // If the transform is invalid, forget it.
-    return false;
-  }
-
   if (!planes->is_empty()) {
     // Also cull against the current clip planes.
     int result;
@@ -185,7 +186,7 @@ apply_cull_planes(const CullPlanes *planes, const GeometricBoundingVolume *node_
       // removed all of the clip planes and occluders.
       nassertr(new_planes->is_empty(), true);
     }
-    else if (!_node_reader.is_final()) {
+    else if (!_node_reader.is_final() && !new_planes->is_empty()) {
       _cull_planes = std::move(new_planes);
     }
   }

@@ -222,12 +222,12 @@ traverse_down(const CullTraverserData &data, PandaNode *node,
     view_frustum = data._view_frustum;
   }
 
-  const GeometricBoundingVolume *node_gbv = node_reader.get_bounds()->as_geometric_bounding_volume();
-
   CullTraverserData next_data(data, std::move(node_reader), net_transform, state, view_frustum);
-  if (data._cull_planes != nullptr &&
-      !next_data.apply_cull_planes(data._cull_planes, node_gbv)) {
-    return;
+  if (data._cull_planes != nullptr) {
+    const GeometricBoundingVolume *node_gbv = node_reader.get_bounds()->as_geometric_bounding_volume();
+    if (!next_data.apply_cull_planes(data._cull_planes, node_gbv)) {
+      return;
+    }
   }
 
   do_traverse(next_data);
