@@ -98,15 +98,14 @@ public:
                       Thread *current_thread = Thread::get_current_thread()) const;
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual bool has_selective_visibility() const;
-  virtual int get_first_visible_child() const;
-  virtual int get_next_visible_child(int n) const;
   virtual bool has_single_child_visibility() const;
   virtual int get_visible_child() const;
-  virtual bool is_renderable() const;
+  //bool is_renderable() const;
   virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
 PUBLISHED:
+  bool is_renderable() const;
+
   virtual PandaNode *make_copy() const;
   PT(PandaNode) copy_subgraph(Thread *current_thread = Thread::get_current_thread()) const;
 
@@ -327,6 +326,10 @@ PUBLISHED:
     FB_tag                  = 0x0010,
     FB_draw_mask            = 0x0020,
     FB_cull_callback        = 0x0040,
+    FB_renderable           = 0x0080,
+    FB_decal                = 0x0100,
+    FB_show_bounds          = 0x0200,
+    FB_show_tight_bounds    = 0x0400,
   };
   INLINE int get_fancy_bits(Thread *current_thread = Thread::get_current_thread()) const;
 
@@ -372,6 +375,8 @@ protected:
 
   void set_cull_callback();
   void disable_cull_callback();
+  void set_renderable();
+
 public:
   virtual void r_prepare_scene(GraphicsStateGuardianBase *gsg,
                                const RenderState *node_state,
@@ -885,6 +890,7 @@ public:
 
   INLINE int get_num_children() const;
   INLINE PandaNode *get_child(int n) const;
+  INLINE const PandaNode::DownConnection &get_child_connection(int n) const;
   INLINE int get_child_sort(int n) const;
   INLINE int find_child(PandaNode *node) const;
 

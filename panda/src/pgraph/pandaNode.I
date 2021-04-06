@@ -1405,6 +1405,18 @@ get_child(int n) const {
 }
 
 /**
+ * Returns the nth child node of this node.  See get_num_children().  Also see
+ * get_children(), if your intention is to iterate through the complete list
+ * of children; get_children() is preferable in this case.
+ */
+INLINE const PandaNode::DownConnection &PandaNodePipelineReader::
+get_child_connection(int n) const {
+  CPT(PandaNode::Down) down = _cdata->get_down();
+  //nassertr(n >= 0 && n < (int)down->size(), nullptr);
+  return (*down)[n];
+}
+
+/**
  * Returns the sort index of the nth child node of this node (that is, the
  * number that was passed to add_child()).  See get_num_children().
  */

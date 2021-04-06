@@ -77,13 +77,13 @@ PUBLISHED:
 
   INLINE bool get_effective_incomplete_render() const;
 
+  INLINE static void flush_level();
+
   void traverse(const NodePath &root);
-  virtual void traverse_below(CullTraverserData &data);
-  INLINE void do_traverse(CullTraverserData &data);
+  void do_traverse(CullTraverserData &data);
+  INLINE void traverse_below(CullTraverserData &data);
 
   virtual void end_traverse();
-
-  INLINE static void flush_level();
 
   void draw_bounding_volume(const BoundingVolume *vol,
                             const TransformState *internal_transform) const;

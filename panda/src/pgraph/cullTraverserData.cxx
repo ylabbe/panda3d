@@ -75,6 +75,18 @@ apply_transform_and_state(CullTraverser *trav) {
         occluders);
     }
   }
+
+  const FogAttrib *fog_attr;
+  if (node_state->get_attrib(fog_attr)) {
+    Fog *fog = fog_attr->get_fog();
+    if (fog != nullptr) {
+      // If we just introduced a FogAttrib here, call adjust_to_camera()
+      // now.  This maybe isn't the perfect time to call it, but it's good
+      // enough; and at this time we have all the information we need for
+      // it.
+      fog->adjust_to_camera(trav->get_camera_transform());
+    }
+  }
 }
 
 /**
