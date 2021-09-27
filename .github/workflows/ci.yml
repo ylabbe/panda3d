@@ -12,11 +12,11 @@ jobs:
       matrix:
         profile:
         - ubuntu-xenial-standard-unity-makefile
-        - ubuntu-bionic-coverage-ninja
-        - macos-eigen-coverage-unity-xcode
-        - macos-nometa-standard-makefile
-#       - windows-standard-unity-msvc # FIXME when GH Actions runners upgrade CMake to >=3.16.1
-        - windows-nopython-nometa-standard-msvc
+        # - ubuntu-bionic-coverage-ninja
+        # - macos-eigen-coverage-unity-xcode
+        # - macos-nometa-standard-makefile
+        # - windows-standard-unity-msvc # FIXME when GH Actions runners upgrade CMake to >=3.16.1
+        # - windows-nopython-nometa-standard-msvc
 
         include:
         - profile: ubuntu-xenial-standard-unity-makefile
