@@ -29,6 +29,7 @@ jobs:
           python: YES
           eigen: NO
 
+<<<<<<< HEAD
         - profile: ubuntu-bionic-coverage-ninja
           os: ubuntu-18.04
           config: Coverage
