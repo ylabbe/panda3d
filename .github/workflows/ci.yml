@@ -29,55 +29,55 @@ jobs:
           python: YES
           eigen: NO
 
-        - profile: ubuntu-bionic-coverage-ninja
-          os: ubuntu-18.04
-          config: Coverage
-          unity: NO
-          generator: Ninja
-          compiler: Clang
-          metalibs: YES
-          python: YES
-          eigen: NO
+        # - profile: ubuntu-bionic-coverage-ninja
+        #   os: ubuntu-18.04
+        #   config: Coverage
+        #   unity: NO
+        #   generator: Ninja
+        #   compiler: Clang
+        #   metalibs: YES
+        #   python: YES
+        #   eigen: NO
 
-        - profile: macos-eigen-coverage-unity-xcode
-          os: macOS-latest
-          config: Coverage
-          unity: YES
-          generator: Xcode
-          compiler: Default
-          metalibs: YES
-          python: YES
-          eigen: YES
+        # - profile: macos-eigen-coverage-unity-xcode
+        #   os: macOS-latest
+        #   config: Coverage
+        #   unity: YES
+        #   generator: Xcode
+        #   compiler: Default
+        #   metalibs: YES
+        #   python: YES
+        #   eigen: YES
 
-        - profile: macos-nometa-standard-makefile
-          os: macOS-latest
-          config: Standard
-          unity: NO
-          generator: Unix Makefiles
-          compiler: Default
-          metalibs: NO
-          python: YES
-          eigen: NO
+        # - profile: macos-nometa-standard-makefile
+        #   os: macOS-latest
+        #   config: Standard
+        #   unity: NO
+        #   generator: Unix Makefiles
+        #   compiler: Default
+        #   metalibs: NO
+        #   python: YES
+        #   eigen: NO
 
-        - profile: windows-standard-unity-msvc
-          os: windows-2019
-          config: Standard
-          unity: YES
-          generator: Visual Studio 16 2019
-          compiler: Default
-          metalibs: YES
-          python: YES
-          eigen: NO
+        # - profile: windows-standard-unity-msvc
+        #   os: windows-2019
+        #   config: Standard
+        #   unity: YES
+        #   generator: Visual Studio 16 2019
+        #   compiler: Default
+        #   metalibs: YES
+        #   python: YES
+        #   eigen: NO
 
-        - profile: windows-nopython-nometa-standard-msvc
-          os: windows-2019
-          config: Standard
-          unity: NO
-          generator: Visual Studio 16 2019
-          compiler: Default
-          metalibs: NO
-          python: NO
-          eigen: NO
+        # - profile: windows-nopython-nometa-standard-msvc
+        #   os: windows-2019
+        #   config: Standard
+        #   unity: NO
+        #   generator: Visual Studio 16 2019
+        #   compiler: Default
+        #   metalibs: NO
+        #   python: NO
+        #   eigen: NO
 
     runs-on: ${{ matrix.os }}
 
