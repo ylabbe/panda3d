@@ -87,18 +87,63 @@ eglGraphicsPipe() {
       PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
         (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
 
-      if (eglGetPlatformDisplayEXT != nullptr) {
-        for (EGLint i = 0; i < num_devices && !_egl_display; ++i) {
-          _egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[i], nullptr);
+      PFNEGLQUERYDEVICEATTRIBEXTPROC eglQueryDeviceAttribEXT =
+        (PFNEGLQUERYDEVICEATTRIBEXTPROC)eglGetProcAddress("eglQueryDeviceAttribEXT");
 
-          if (_egl_display && !eglInitialize(_egl_display, &major, &minor)) {
+      const char* env_p = std::getenv("CUDA_VISIBLE_DEVICES");
+      int requiredCudaDeviceId;
+
+      if(env_p != NULL) {
+        requiredCudaDeviceId = std::atoi(env_p);
+        if (egldisplay_cat.is_debug()) {
+          egldisplay_cat.debug()
+            << "Using CUDA Device from CUDA_VISIBLE_DEVICES: " << requiredCudaDeviceId << ".\n";
+        }
+      } else {
+        requiredCudaDeviceId = 0;
+        if (egldisplay_cat.is_debug()) {
+          egldisplay_cat.debug()
+            << "Using default CUDA Device: " << requiredCudaDeviceId << ".\n";
+        }
+      }
+
+      for (EGLint i = 0; i < num_devices; ++i) {
+        EGLAttrib cudaDeviceId = -1;
+
+        eglQueryDeviceAttribEXT(devices[i], EGL_CUDA_DEVICE_NV, &cudaDeviceId);
+        if (cudaDeviceId == requiredCudaDeviceId){
+          _egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[i], nullptr);
+          eglInitialize(_egl_display, &major, &minor);
+          if (egldisplay_cat.is_debug()) {
+            egldisplay_cat.debug()
+              << "Found EGL device " << i << " matching CUDA device " << requiredCudaDeviceId << ".\n";
+          }
+          break;
+        }
+        if (i == num_devices){
             egldisplay_cat.warning()
               << "Couldn't initialize EGL platform display " << i << ": "
               << get_egl_error_string(eglGetError()) << "\n";
             _egl_display = EGL_NO_DISPLAY;
-          }
         }
       }
+
+      // PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
+      //   (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
+
+      // if (eglGetPlatformDisplayEXT != nullptr) {
+      //   for (EGLint i = 0; i < num_devices && !_egl_display; ++i) {
+      //     _egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[i], nullptr);
+
+      //     if (_egl_display && !eglInitialize(_egl_display, &major, &minor)) {
+      //       egldisplay_cat.warning()
+      //         << "Couldn't initialize EGL platform display " << i << ": "
+      //         << get_egl_error_string(eglGetError()) << "\n";
+      //       _egl_display = EGL_NO_DISPLAY;
+      //     }
+      //   }
+      // }
+
     }
   }
 
