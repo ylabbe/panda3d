@@ -89,23 +89,16 @@ eglGraphicsPipe() {
       PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
         (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
 
-      PFNEGLQUERYDEVICEATTRIBEXTPROC eglQueryDeviceAttribEXT =
-        (PFNEGLQUERYDEVICEATTRIBEXTPROC)eglGetProcAddress("eglQueryDeviceAttribEXT");
+      const char* env_p = std::getenv("EGL_VISIBLE_DEVICES");
+      int device_id = std::atoi(env_p);
 
-      for (EGLint i = 0; i < num_devices; i++) {
-        EGLAttrib cudaDeviceId = -1;
-        EGLBoolean eglStatus;
-        eglStatus = eglQueryDeviceAttribEXT(devices[i], EGL_CUDA_DEVICE_NV, &cudaDeviceId);
-        if (eglStatus){
-          _egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[i], nullptr);
-          eglInitialize(_egl_display, &major, &minor);
-          std::cout << "Found EGL device " << i << " compatible with CUDA_VISIBLE_DEVICES \n" << std::endl;
-          break;
-          }
-        if (i == num_devices){
-            std::cout << "Couldn't initialize EGL platform display " << "\n";
-            _egl_display = EGL_NO_DISPLAY;
-        }
+      _egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, devices[device_id], nullptr);
+      eglInitialize(_egl_display, &major, &minor);
+
+      if (egldisplay_cat.is_debug()) {
+        egldisplay_cat.debug()
+          << "Initialized EGL device " << device_id << " (from EGL_VISIBLE_DEVICES).\n";
+      }
     }
       // PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT =
       //   (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
@@ -122,9 +115,8 @@ eglGraphicsPipe() {
       //     }
       //   }
       // }
-
-    }
   }
+
 
   if (!_egl_display) {
     egldisplay_cat.error()
